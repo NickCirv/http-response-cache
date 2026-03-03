@@ -1,0 +1,43 @@
+{
+  "name": "http-response-cache",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Record and replay HTTP responses locally — reduce API calls and enable offline development",
+  "bin": {
+    "http-response-cache": "./index.js",
+    "hcache": "./index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "developer-tools",
+    "cli",
+    "nodejs",
+    "zero-dependencies",
+    "http",
+    "cache",
+    "mock",
+    "offline",
+    "record",
+    "replay",
+    "proxy",
+    "api",
+    "testing",
+    "ci"
+  ],
+  "license": "MIT",
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NickCirv/http-response-cache.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NickCirv/http-response-cache/issues"
+  },
+  "homepage": "https://github.com/NickCirv/http-response-cache#readme"
+}
