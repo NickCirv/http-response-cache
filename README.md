@@ -1,3 +1,5 @@
+![Banner](banner.svg)
+
 # http-response-cache
 
 Record and replay HTTP responses locally — reduce API calls and enable offline development.
