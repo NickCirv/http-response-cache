@@ -1,143 +1,70 @@
-![Banner](banner.svg)
+<div align="center">
 
 # http-response-cache
 
-Record and replay HTTP responses locally — reduce API calls and enable offline development.
+**Record real HTTP responses locally — replay them offline to cut API costs and unblock CI**
 
-**Zero external dependencies.** Pure Node.js built-ins only. Works with any HTTP/HTTPS API.
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen?labelColor=0B0A09)](LICENSE)
+[![Zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen?labelColor=0B0A09)](package.json)
+[![Node >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen?labelColor=0B0A09)](package.json)
 
-## Why
-
-- Stop paying for API calls during development
-- Run tests offline without a real internet connection
-- Seed CI/CD pipelines with deterministic fixture data
-- Share recorded API responses with your team
+</div>
 
 ## Install
 
 ```bash
-npm install -g http-response-cache
+npx github:NickCirv/http-response-cache --help
 ```
 
-Or use without installing:
+Or run any command directly:
 
 ```bash
-npx http-response-cache --help
+npx github:NickCirv/http-response-cache <command> [options]
+```
+
+The short alias `hcache` is available when installed globally:
+
+```bash
+npm install -g github:NickCirv/http-response-cache
+hcache --help
 ```
 
 ## Usage
 
-```
-http-response-cache <command> [options]
-hcache <command> [options]
-```
-
-### record — capture real responses
-
 ```bash
+# Record: forward requests to a real API and save responses to .cache/
 hcache record --port 3001 --target https://api.example.com
-```
 
-Forwards every request to the target URL and saves the response to `.cache/`. Your app calls `http://localhost:3001` instead.
-
-### replay — serve from cache only
-
-```bash
+# Replay: serve cached responses only — no network calls
 hcache replay --port 3001
+
+# Proxy: cache-first; falls back to upstream and saves on miss
+hcache proxy --port 3001 --target https://api.example.com --ttl 3600
 ```
-
-Returns cached responses without ever hitting the real API. Returns `404` with a helpful message on cache miss.
-
-### proxy — cache-first smart proxy
-
-```bash
-hcache proxy --port 3001 --target https://api.example.com
-```
-
-Checks cache first. If found, replays it. If not, fetches from upstream and saves for next time. Best mode for development.
-
-### list — inspect the cache
-
-```bash
-hcache list
-hcache list --cache-dir ./fixtures
-```
-
-Shows all cached entries with method, path, status code, size, and age.
-
-### clear — remove cache entries
-
-```bash
-hcache clear                   # remove everything
-hcache clear --path /users     # remove entries matching path prefix
-```
-
-### export — bundle cache as a single file
-
-```bash
-hcache export fixtures.json
-```
-
-Useful for committing to version control or sharing with teammates.
-
-### import — load a bundle
-
-```bash
-hcache import fixtures.json
-```
-
-Restore a previously exported bundle. Works great in CI.
-
-## Options
 
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--port`, `-p` | `3001` | Port to listen on |
-| `--target`, `-t` | — | Upstream API base URL (required for record/proxy) |
+| `--target`, `-t` | — | Upstream API base URL (required for `record`/`proxy`) |
 | `--cache-dir`, `-d` | `.cache` | Directory to store cache files |
 | `--ttl <seconds>` | — | Expire entries after N seconds |
 | `--ignore-headers` | `false` | Exclude request headers from cache key |
-| `--path <prefix>` | — | Filter by URL path prefix (clear only) |
+| `--path <prefix>` | — | Filter by URL path prefix (`clear` only) |
 
-## Cache Format
+Additional commands: `list` · `clear` · `export <file>` · `import <file>`
 
-Each entry is saved as a JSON file at `.cache/<method>-<hash>.json`:
+## What it does
 
-```json
-{
-  "key": "a1b2c3d4...",
-  "request": {
-    "method": "GET",
-    "path": "/users",
-    "query": {},
-    "headers": { "accept": "application/json" }
-  },
-  "response": {
-    "status": 200,
-    "headers": { "content-type": "application/json" },
-    "body": "base64-encoded-body",
-    "bodyEncoding": "base64"
-  },
-  "cachedAt": "2024-01-01T00:00:00.000Z",
-  "ttl": 3600
-}
-```
-
-### Cache Key
-
-Keys are deterministic: `MD5(method + path + sorted-query-params + body-hash)`
-
-The same request always maps to the same file. Query params are sorted so `?a=1&b=2` and `?b=2&a=1` are identical.
+`http-response-cache` runs a local proxy server in one of three modes: **record** (forward + save), **replay** (serve from disk only), or **proxy** (cache-first with upstream fallback). Cache entries are deterministic JSON files keyed by `MD5(method + path + sorted-query + body-hash)`, so the same request always maps to the same file. Use `export`/`import` to bundle a fixture set for CI or share it with teammates.
 
 ## CI Example
 
 ```yaml
-# .github/workflows/test.yml
 - name: Import API fixtures
-  run: npx http-response-cache import fixtures.json --cache-dir .cache
+  run: npx github:NickCirv/http-response-cache import fixtures.json
 
 - name: Start replay server
-  run: npx http-response-cache replay --port 3001 &
+  run: npx github:NickCirv/http-response-cache replay --port 3001 &
 
 - name: Run tests
   run: npm test
@@ -145,17 +72,5 @@ The same request always maps to the same file. Query params are sorted so `?a=1&
     API_BASE_URL: http://localhost:3001
 ```
 
-## Security
-
-- Authorization headers are redacted in logs (first 8 chars only)
-- No credentials are stored in cache files beyond what the upstream API returns
-- All sensitive values should be provided via environment variables, not flags
-
-## Requirements
-
-- Node.js 18+
-- No npm dependencies
-
-## License
-
-MIT
+---
+<sub>Zero dependencies · Node >=18 · MIT · by <a href="https://github.com/NickCirv">NickCirv</a></sub>
